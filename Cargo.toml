@@ -1,0 +1,4 @@
+[workspace]
+members = ["core", "bin/*"]
+default-members = ["core", "bin/desktop"]
+resolver = "2"

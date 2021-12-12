@@ -1,0 +1,88 @@
+$bg: #212121;
+$fg: whitesmoke;
+$font-heading: cursive;
+$font-regular: Monaco, monospace;
+$panel-height: 2.5em;
+$vertical-spacing: 3em;
+
+%base {
+  color: $fg;
+  font-family: $font-regular;
+  text-align: center;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  @extend %base;
+  background-color: $bg;
+  overflow: hidden;
+}
+
+.heading {
+  margin-top: 2*$vertical-spacing;
+
+  h1, h3 {
+    @extend %base;
+    font-family: $font-heading;
+  }
+}
+
+.panel {
+  @extend %base;
+  position: relative;
+
+  width: 23%;
+  height: $panel-height;
+  margin-top: $vertical-spacing;
+  margin-left: auto;
+  margin-right: auto;
+
+  border: solid;
+  border-color: darkred;
+  border-width: 2px;
+  border-radius: 5px;
+
+  p {
+    @extend %base;
+    position: absolute;
+    left: 0;
+
+    width: 100%;
+    margin: 0;
+
+    line-height: $panel-height;
+    font-weight: bold;
+  }
+
+  button {
+    @extend %base;
+    position: absolute;
+    right: 0;
+
+    width: 15%;
+    height: inherit;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    border: none;
+    background-color: darkred;
+
+    &:hover {
+      background-color: #850f07;
+    }
+  }
+}
+
+.logo {
+  position: absolute;
+  z-index: -2;
+
+  width: 125%;
+  height: 125%;
+  margin-top: -5%;
+  margin-left: -40%;
+}

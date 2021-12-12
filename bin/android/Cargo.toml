@@ -1,0 +1,40 @@
+[package]
+name = "android-build"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+renderer-core = { path = "../../core" }
+ndk-glue = { version = "0.3", features = ["logger"] }
+log = "0.4"
+android_logger = "0.10.1"
+
+# cargo-apk compiles your code to an .so file,
+# which is then loaded by the Android runtime
+[lib]
+crate-type = ["cdylib"]
+
+# Android-specic configuration follows.
+[package.metadata.android]
+# Name of your APK as shown in the app drawer and in the app switcher
+apk_label = "Hip Startup"
+# Specifies the array of targets to build for.
+build_targets = [
+    "x86_64-linux-android",
+    "armv7-linux-androideabi",
+    "aarch64-linux-android",
+]
+
+# The target Android API level.
+target_sdk_version = 29
+min_sdk_version = 20
+
+# See https://developer.android.com/guide/topics/manifest/application-element
+[package.metadata.android.application]
+# See https://developer.android.com/guide/topics/manifest/application-element#theme
+#
+# Example shows setting the theme of an application to fullscreen.
+theme = "@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
+debuggable = true
