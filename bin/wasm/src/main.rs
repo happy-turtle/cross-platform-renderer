@@ -1,7 +1,7 @@
 use log::Level;
-use renderer_core::create_window;
+use renderer_core::start;
 
 fn main() {
-    console_log::init_with_level(Level::Warn);
-    create_window()
+    console_log::init_with_level(Level::Warn).expect("Log init failed");
+    start();
 }

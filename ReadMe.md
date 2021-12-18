@@ -5,11 +5,11 @@
 
 ### Current status
 
-Platform | Compilation | BG Clear | Triangle
----|---|---|---
-Desktop | :heavy_check_mark: | :heavy_check_mark: | :x:
-Web | :heavy_check_mark: | :heavy_check_mark: | :x:
-Android | :heavy_check_mark: | :x: | :x:
+| Platform | Compilation        | BG Clear           | Triangle |
+| -------- | ------------------ | ------------------ | -------- |
+| Desktop  | :heavy_check_mark: | :heavy_check_mark: | :x:      |
+| Web      | :heavy_check_mark: | :heavy_check_mark: | :x:      |
+| Android  | :heavy_check_mark: | :heavy_check_mark: | :x:      |
 
 ## Requirements
 
@@ -27,7 +27,7 @@ Add desired android targets with `rustup target add <triple>`.
 
 Install trunk with `cargo install trunk`
 
-Add wasm target with `rustup target add wasm-unknown-unknown`
+Add wasm target with `rustup target add wasm32-unknown-unknown`
 
 ## Build instructions
 

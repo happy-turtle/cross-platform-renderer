@@ -11,7 +11,8 @@ $vertical-spacing: 3em;
   text-align: center;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -22,9 +23,10 @@ body {
 }
 
 .heading {
-  margin-top: 2*$vertical-spacing;
+  margin-top: 2 * $vertical-spacing;
 
-  h1, h3 {
+  h1,
+  h3 {
     @extend %base;
     font-family: $font-heading;
   }

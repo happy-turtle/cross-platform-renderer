@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 renderer-core = { path = "../../core" }
-ndk-glue = { version = "0.3", features = ["logger"] }
+ndk-glue = { version = "0.5", features = ["logger"] }
 log = "0.4"
-android_logger = "0.10.1"
+android_logger = "0.10"
 
 # cargo-apk compiles your code to an .so file,
 # which is then loaded by the Android runtime
@@ -19,7 +19,7 @@ crate-type = ["cdylib"]
 # Android-specic configuration follows.
 [package.metadata.android]
 # Name of your APK as shown in the app drawer and in the app switcher
-apk_label = "Hip Startup"
+apk_label = "Crusty Renderer"
 # Specifies the array of targets to build for.
 build_targets = [
     "x86_64-linux-android",
