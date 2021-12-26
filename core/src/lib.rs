@@ -1,4 +1,4 @@
-use std::iter;
+use std::borrow::Cow;
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
@@ -67,8 +67,22 @@ async fn run() {
         Err(e) => panic!("{:?}", e),
     };
 
+    // Load the shaders from disk
+    let shader = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(SHADER)),
+    });
+
+    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        label: None,
+        bind_group_layouts: &[],
+        push_constant_ranges: &[],
+    });
+
     let preferred_format = if let Some(surface) = &surface {
-        surface.get_preferred_format(&adapter).unwrap()
+        surface
+            .get_preferred_format(&adapter)
+            .expect("surface is incompatible with the adapter")
     } else {
         // if Surface is none, we're guaranteed to be on android
         wgpu::TextureFormat::Rgba8UnormSrgb
@@ -84,6 +98,30 @@ async fn run() {
     if let Some(surface) = &mut surface {
         surface.configure(&device, &config);
     }
+
+    let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        label: Some("Render Pipeline"),
+        layout: Some(&pipeline_layout),
+        vertex: wgpu::VertexState {
+            module: &shader,
+            entry_point: "vs_main",
+            buffers: &[],
+        },
+        fragment: Some(wgpu::FragmentState {
+            module: &shader,
+            entry_point: "fs_main",
+            targets: &[wgpu::ColorTargetState {
+                // 4.
+                format: config.format,
+                blend: Some(wgpu::BlendState::REPLACE),
+                write_mask: wgpu::ColorWrites::ALL,
+            }],
+        }),
+        primitive: wgpu::PrimitiveState::default(),
+        depth_stencil: None,
+        multisample: wgpu::MultisampleState::default(),
+        multiview: None,
+    });
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::Resumed => {
@@ -118,22 +156,10 @@ async fn run() {
                         ..
                     } => *control_flow = ControlFlow::Exit,
                     WindowEvent::Resized(physical_size) => {
-                        if physical_size.width > 0 && physical_size.height > 0 {
-                            config.width = physical_size.width;
-                            config.height = physical_size.height;
-                            if surface.is_some() {
-                                surface.as_ref().unwrap().configure(&device, &config);
-                            }
-                        }
+                        resize(&surface, &mut config, &device, *physical_size);
                     }
                     WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        if new_inner_size.width > 0 && new_inner_size.height > 0 {
-                            config.width = new_inner_size.width;
-                            config.height = new_inner_size.height;
-                            if surface.is_some() {
-                                surface.as_ref().unwrap().configure(&device, &config);
-                            }
-                        }
+                        resize(&surface, &mut config, &device, **new_inner_size);
                     }
                     _ => {}
                 }
@@ -141,17 +167,11 @@ async fn run() {
         }
         Event::RedrawRequested(_) => {
             update();
-            match render(&surface, &device, &queue) {
+            match render(&surface, &device, &queue, &render_pipeline) {
                 Ok(_) => {}
                 // Reconfigure the surface if lost
                 Err(wgpu::SurfaceError::Lost) => {
-                    if window.inner_size().width > 0 && window.inner_size().height > 0 {
-                        config.width = window.inner_size().width;
-                        config.height = window.inner_size().height;
-                        if surface.is_some() {
-                            surface.as_ref().unwrap().configure(&device, &config);
-                        }
-                    }
+                    resize(&surface, &mut config, &device, window.inner_size());
                 }
                 // The system is out of memory, we should probably quit
                 Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
@@ -159,29 +179,35 @@ async fn run() {
                 Err(e) => eprintln!("{:?}", e),
             }
         }
-        Event::RedrawEventsCleared => {
+        Event::MainEventsCleared => {
             // RedrawRequested will only trigger once, unless we manually
             // request it.
             window.request_redraw();
+        }
+        Event::Suspended => {
+            surface.take();
         }
         _ => {}
     });
 }
 
-// fn resize(
-//     surface: &Option<wgpu::Surface>,
-//     config: &wgpu::SurfaceConfiguration,
-//     device: &wgpu::Device,
-//     new_size: winit::dpi::PhysicalSize<u32>,
-// ) {
-//     if new_size.width > 0 && new_size.height > 0 {
-//         config.width = new_size.width;
-//         config.height = new_size.height;
-//         if surface.is_some() {
-//             surface.as_ref().unwrap().configure(&device, &config);
-//         }
-//     }
-// }
+fn resize(
+    surface: &Option<wgpu::Surface>,
+    config: &mut wgpu::SurfaceConfiguration,
+    device: &wgpu::Device,
+    new_size: winit::dpi::PhysicalSize<u32>,
+) {
+    if new_size.width > 0 && new_size.height > 0 {
+        config.width = new_size.width;
+        config.height = new_size.height;
+        if surface.is_some() {
+            surface
+                .as_ref()
+                .expect("no surface")
+                .configure(device, config);
+        }
+    }
+}
 
 #[allow(unused_variables)]
 fn input(event: &WindowEvent) -> bool {
@@ -194,41 +220,54 @@ fn render(
     surface: &Option<wgpu::Surface>,
     device: &wgpu::Device,
     queue: &wgpu::Queue,
+    render_pipeline: &wgpu::RenderPipeline,
 ) -> Result<(), wgpu::SurfaceError> {
-    if surface.is_none() {
-        return Err(wgpu::SurfaceError::Lost);
-    }
-    let output = surface.as_ref().unwrap().get_current_texture()?;
-    let view = output
-        .texture
-        .create_view(&wgpu::TextureViewDescriptor::default());
+    if let Some(surface) = &surface {
+        let output = match surface.get_current_texture() {
+            Ok(surface) => surface,
+            Err(err) => return Err(err),
+        };
+        let view = output
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
 
-    let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-        label: Some("Render Encoder"),
-    });
-
-    {
-        let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: Some("Render Pass"),
-            color_attachments: &[wgpu::RenderPassColorAttachment {
-                view: &view,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color {
-                        r: 0.1,
-                        g: 0.2,
-                        b: 0.3,
-                        a: 1.0,
-                    }),
-                    store: true,
-                },
-            }],
-            depth_stencil_attachment: None,
+        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+            label: Some("Render Encoder"),
         });
+
+        {
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("Render Pass"),
+                color_attachments: &[wgpu::RenderPassColorAttachment {
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::BLUE),
+                        store: true,
+                    },
+                }],
+                depth_stencil_attachment: None,
+            });
+            render_pass.set_pipeline(render_pipeline);
+            render_pass.draw(0..3, 0..1);
+        }
+
+        queue.submit(Some(encoder.finish()));
+        output.present();
     }
-
-    queue.submit(iter::once(encoder.finish()));
-    output.present();
-
     Ok(())
 }
+
+const SHADER: &str = r#"
+[[stage(vertex)]]
+fn vs_main([[builtin(vertex_index)]] in_vertex_index: u32) -> [[builtin(position)]] vec4<f32> {
+    let x = f32(i32(in_vertex_index) - 1);
+    let y = f32(i32(in_vertex_index & 1u) * 2 - 1);
+    return vec4<f32>(x, y, 0.0, 1.0);
+}
+
+[[stage(fragment)]]
+fn fs_main() -> [[location(0)]] vec4<f32> {
+    return vec4<f32>(1.0, 0.0, 0.0, 1.0);
+}
+"#;

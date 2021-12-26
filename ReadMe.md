@@ -5,11 +5,11 @@
 
 ### Current status
 
-| Platform | Compilation        | BG Clear           | Triangle |
-| -------- | ------------------ | ------------------ | -------- |
-| Desktop  | :heavy_check_mark: | :heavy_check_mark: | :x:      |
-| Web      | :heavy_check_mark: | :heavy_check_mark: | :x:      |
-| Android  | :heavy_check_mark: | :heavy_check_mark: | :x:      |
+| Platform | Compilation        | BG Clear           | Triangle           | Cube |
+| -------- | ------------------ | ------------------ | ------------------ | ---- |
+| Desktop  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:  |
+| Web      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:  |
+| Android  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:  |
 
 ## Requirements
 
@@ -41,7 +41,7 @@ Run `cargo apk run -p android-build` optionally with the flag `--target <triple>
 
 ### Web
 
-Run `cd bin/wasm/`
+Run `cd bin/web/`
 
 Run `trunk serve`
 
