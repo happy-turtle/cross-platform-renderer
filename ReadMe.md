@@ -1,15 +1,16 @@
-## Goals
+# Cross-Platform Renderer
 
-- cross-compilation for desktop (Windows and Linux), web (wasm) and mobile (Android)
-- running 3D renderer with a 3D sample scene
+A cross platform renderer using wgpu, written in rust. A proof of concept to compile and run on desktop, mobile and the web in one project. 
 
-### Current status
+## Current status
 
-| Platform | Compilation        | BG Clear           | Triangle           | Cube |
-| -------- | ------------------ | ------------------ | ------------------ | ---- |
-| Desktop  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:  |
-| Web      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:  |
-| Android  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x:  |
+| Platform | Compilation        | BG Clear           | Triangle           |
+| -------- | ------------------ | ------------------ | ------------------ |
+| Desktop  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Web      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Android  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+
+![A red triangle rendered on blue background](screenshot.png)
 
 ## Requirements
 
