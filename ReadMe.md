@@ -40,10 +40,25 @@ Run `cargo run`. By default the desktop crate is build.
 
 Run `cargo apk run -p android-build` optionally with the flag `--target <triple>` for explicit target selection.
 
-### Web
+### Web - WebGL2 Backend
 
 Run `cd bin/web/`
 
 Run `trunk serve`
 
 Trunk is now serving app under `http://localhost:8080`
+
+## Using WebGPU as the Web Backend
+
+Change the limits in the device descriptor in `core/src/lib.rs` from `wgpu::Limits::downlevel_webgl2_defaults()` to `wgpu::Limits::default()`.
+
+Remove the `webgl` feature from `core/Cargo.toml`.
+
+Set the `--cfg=web_sys_unstable_apis` rust flag.
+This can be done by setting `RUSTFLAGS=--cfg=web_sys_unstable_apis`, or by creating a `.cargo/config` file with
+```
+[build]
+rustflags = [
+    "--cfg=web_sys_unstable_apis"
+]
+```
