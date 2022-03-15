@@ -48,7 +48,8 @@ Run `trunk serve`
 
 Trunk is now serving app under `http://localhost:8080`
 
-## Using WebGPU as the Web Backend
+## Using WebGPU as the Web Backend 
+(Thanks to [Oberdiah](https://github.com/Oberdiah))
 
 Change the limits in the device descriptor in `core/src/lib.rs` from `wgpu::Limits::downlevel_webgl2_defaults()` to `wgpu::Limits::default()`.
 
