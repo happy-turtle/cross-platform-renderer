@@ -9,7 +9,7 @@ pub fn start() {
     pollster::block_on(run());
 }
 
-async fn run() {
+pub async fn run() {
     let event_loop = EventLoop::new();
     let window = match WindowBuilder::new().build(&event_loop) {
         Ok(window) => window,

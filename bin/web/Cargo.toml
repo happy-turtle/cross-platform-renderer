@@ -9,3 +9,5 @@ edition = "2021"
 renderer-core = { path = "../../core" }
 console_log = "0.2"
 log = "0.4"
+wasm-bindgen-futures = "0.4"
+console_error_panic_hook = "0.1"
